@@ -17,16 +17,22 @@ Copy `md.lua` to your project in whatever directory you want.
 ## Use it
 Render markdown from a string.
 ```lua
-local html = md.render(mdSoucre)
+local html = md.render(mdSoucre, options)
 ```
 
 Render markdown from a line iterator.
 ```lua
-local html = md.renderLines(iterator)
+local html = md.renderLines(iterator, options)
 ```
 
 Calling the module as a function will invoke `md.render` if the first argument is a string, and
 `md.renderLines` if the first argument is a function. This is the easiest way to use this module.
+
+The options table is an optional table of options. The currently supported options are below.
+* `tag` - Surrounding HTML tag for HTML fragment.
+* `attributes` - A table attributes for the surround HTML node. For example, `{ style = "padding: 10px;" }`.
+* `insertHead` - An HTML fragment to insert before the main body of HTML. (Inserted after the wrapping tag, if present.)
+* `insertTail` - An HTML fragment to insert after the main body of HTML. (Inserted before the closing tag, if present.)
 
 ## Todo
 
