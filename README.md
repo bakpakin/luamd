@@ -1,5 +1,5 @@
 # luamd
-luamd is a Markdown to HTML renderer written in portable, pure Lua. Its also really easy to use.
+luamd is a Markdown to HTML renderer written in portable, pure Lua. It's also really easy to use.
 
 ```lua
 local md = require "md"
