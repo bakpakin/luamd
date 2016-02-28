@@ -91,7 +91,7 @@ local function externalLinkEscape(str, t)
     if nomatches then t[#t + 1] = str end
 end
 
-local function inlineLinkEscape(str, t)
+local function linkEscape(str, t)
     local nomatches = true
     for m1, m2, m3, m4 in gmatch(str, '(.*)%[(.*)%]%((.*)%)(.*)') do
         if nomatches then externalLinkEscape(match(m1, '^(.-)!?$'), t); nomatches = false end
@@ -107,8 +107,6 @@ local function inlineLinkEscape(str, t)
     end
     if nomatches then externalLinkEscape(str, t) end
 end
-
-local linkEscape = inlineLinkEscape
 
 local lineDeimiterNames = {['`'] = 'code', ['__'] = 'strong', ['**'] = 'strong', ['_'] = 'em', ['*'] = 'em' }
 local function lineRead(str, start, finish)
@@ -420,18 +418,33 @@ local function renderTree(tree, links, accum)
     end
 end
 
-local function renderLines(stream)
+local function renderLines(stream, options)
     local tree, links = readLineStream(stream)
     local accum = {}
+    local head, tail, insertHead, insertTail = nil, nil, nil, nil
+    if options then
+        assert(type(options) == 'table', "Options argument should be a table.")
+        if options.tag then
+            tail = format('</%s>', options.tag)
+            if options.attributes then
+                format('<%s %s>', options.tag, renderAttributes(options.attributes))
+            else
+                format('<%s>', options.tag)
+            end
+        end
+        insertHead = options.insertHead
+        insertTail = options.insertTail
+    end
+    accum[#accum + 1] = head
+    accum[#accum + 1] = insertHead
     renderTree(tree, links, accum)
+    accum[#accum + 1] = insertTail
+    accum[#accum + 1] = tail
     return concat(accum)
 end
 
-local function render(str)
-    local tree, links = read(str)
-    local accum = {}
-    renderTree(tree, links, accum)
-    return concat(accum)
+local function render(str, options)
+    return renderLines(stringLineStream(str), options)
 end
 
 --------------------------------------------------------------------------------
