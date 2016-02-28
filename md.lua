@@ -282,6 +282,7 @@ local function readSimple(pop, peek, tree, links)
     tree[#tree + 1] = p
     repeat
         p[#p + 1] = lineRead(line)
+        p[#p + 1] = '\r\n'
         line = pop()
     until not line or isSpecialLine(line)
     return peek()
