@@ -427,9 +427,9 @@ local function renderLines(stream, options)
         if options.tag then
             tail = format('</%s>', options.tag)
             if options.attributes then
-                format('<%s %s>', options.tag, renderAttributes(options.attributes))
+                head = format('<%s %s>', options.tag, renderAttributes(options.attributes))
             else
-                format('<%s>', options.tag)
+                head = format('<%s>', options.tag)
             end
         end
         insertHead = options.insertHead
