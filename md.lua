@@ -273,16 +273,27 @@ local function readSimple(pop, peek, tree, links)
         return pop()
     end
 
+    -- Test for header type two
+    local nextLine = pop()
+    if nextLine and match(nextLine, "^%s*%=+$") then
+        tree[#tree + 1] = { lineRead(line), type = "h1" }
+        return pop()
+    elseif nextLine and match(nextLine, "^%s*%-+$") then
+        tree[#tree + 1] = { lineRead(line), type = "h2" }
+        return pop()
+    end
+
     -- Do Paragraph
     local p = {
+        lineRead(line), '\r\n',
         type = "p"
     }
     tree[#tree + 1] = p
-    repeat
-        p[#p + 1] = lineRead(line)
+    while nextLine and not isSpecialLine(nextLine) do
+        p[#p + 1] = lineRead(nextLine)
         p[#p + 1] = '\r\n'
-        line = pop()
-    until not line or isSpecialLine(line)
+        nextLine = pop()
+    end
     return peek()
 
 end
