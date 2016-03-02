@@ -42,7 +42,7 @@ Supports most of basic Markdown syntax, but there are some features that need to
 I haven't implemented them because I don't need them - yet.
 
 * HTML and code escapes - Probably the most important one on the list.
-* Some alternative syntax for Headers and Numbered Lists (using `#.` for lists, and underlined headers)
+* Some alternative syntax for numbered Lists (using `#.`)
 * Indent style code - I prefer backtick quoted code
 * Tables - GitHub style tables would be cool
 * Footnotes - Might need them, but not yet.
