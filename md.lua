@@ -464,16 +464,25 @@ end
 -- Module
 --------------------------------------------------------------------------------
 
+local function pwrap(...)
+    local status, value = pcall(...)
+    if status then
+        return value
+    else
+        return nil, value
+    end
+end
+
 local function renderLineIterator(stream, options)
-    return pcall(renderLinesRaw, stream, options)
+    return pwrap(renderLinesRaw, stream, options)
 end
 
 local function renderTable(t, options)
-    return pcall(renderLinesRaw, tableLineStream(t), options)
+    return pwrap(renderLinesRaw, tableLineStream(t), options)
 end
 
 local function renderString(str, options)
-    return pcall(renderLinesRaw, stringLineStream(str), options)
+    return pwrap(renderLinesRaw, stringLineStream(str), options)
 end
 
 local renderers = {
