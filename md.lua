@@ -29,6 +29,7 @@ local find = string.find
 local lower = string.lower
 local tonumber = tonumber
 local type = type
+local pcall = pcall
 
 --------------------------------------------------------------------------------
 -- Stream Utils
@@ -186,7 +187,7 @@ local PATTERN_RULE2 = "^%s*(%*+)%s*$"
 local PATTERN_RULE3 = "^%s*(%_+)%s*$"
 local PATTERN_CODEBLOCK = "^%s*%`%`%`(.*)"
 local PATTERN_BLOCKQUOTE = "^%s*> (.*)$"
-local PATTERN_ULIST = "^%s*%* (.+)$"
+local PATTERN_ULIST = "^%s*[%*%-] (.+)$"
 local PATTERN_OLIST = "^%s*%d+%. (.+)$"
 local PATTERN_LINKDEF = "^%s*%[(.*)%]%s*%:%s*(.*)"
 
@@ -342,12 +343,12 @@ local function readList(pop, peek, tree, links, expectedIndent)
     local line = peek()
     local indent = getIndentLevel(line)
     local list = {
-        type = (listPattern == PATTERN_OLIST and "ol" or "ul")
+        type = (listPattern == PATTERN_ULIST and "ul" or "ol")
     }
     tree[#tree + 1] = list
     while lineType == listPattern do
         list[#list + 1] = {
-            lineRead(match(line, listPattern)),
+            lineRead(match(line, lineType)),
             type = "li"
         }
         line = pop()
@@ -429,7 +430,7 @@ local function renderTree(tree, links, accum)
     end
 end
 
-local function renderLines(stream, options)
+local function renderLinesRaw(stream, options)
     local tree, links = readLineStream(stream)
     local accum = {}
     local head, tail, insertHead, insertTail = nil, nil, nil, nil
@@ -454,25 +455,41 @@ local function renderLines(stream, options)
     return concat(accum)
 end
 
-local function render(str, options)
-    return renderLines(stringLineStream(str), options)
-end
-
 --------------------------------------------------------------------------------
 -- Module
 --------------------------------------------------------------------------------
 
+local function renderLines(stream, options)
+    return pcall(renderLinesRaw, stream, options)
+end
+
+local function renderTable(t, options)
+    return pcall(renderLinesRaw, tableLineStream(t), options)
+end
+
+local function renderString(str, options)
+    return pcall(renderLinesRaw, stringLineStream(str), options)
+end
+
+local renderers = {
+    ['string'] = renderString,
+    ['table'] = renderTable,
+    ['function'] = renderLines
+}
+
+local function render(source, options)
+    local renderer = renderers[type(source)]
+    if not renderer then return nil, "Source must be a string, table, or function." end
+    return renderer(source, options)
+end
+
 return setmetatable({
     render = render,
-    renderLines = renderLines
+    renderString = renderString,
+    renderLines = renderLines,
+    renderTable = renderTable
 }, {
     __call = function(self, ...)
-        if type(...) == "function"  then
-            return renderLines(...)
-        elseif type(...) == "string" then
-            return render(...)
-        else
-            error "Expected string or function."
-        end
+        return render(...)
     end
 })

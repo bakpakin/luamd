@@ -15,14 +15,14 @@ Write whatever you want.
 Copy `md.lua` to your project in whatever directory you want.
 
 ## Use it
-Render markdown from a string.
+Render markdown from a string. On bad input, retuns nil and an error message.
 ```lua
-local html = md.render(mdSoucre, options)
+local html, err = md.render(mdSoucre, options)
 ```
 
 Render markdown from a line iterator.
 ```lua
-local html = md.renderLines(iterator, options)
+local html, err = md.renderLines(iterator, options)
 ```
 
 Calling the module as a function will invoke `md.render` if the first argument is a string, and
