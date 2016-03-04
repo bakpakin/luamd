@@ -247,6 +247,7 @@ local function readSimple(pop, peek, tree, links)
     -- Test for Code Block
     local syntax = match(line, PATTERN_CODEBLOCK)
     if syntax then
+        local indent = getIndentLevel(line)
         local code = {
             type = "code"
         }
@@ -260,7 +261,7 @@ local function readSimple(pop, peek, tree, links)
             [1] = code
         }
         tree[#tree + 1] = pre
-        while not match(pop(), PATTERN_CODEBLOCK) do
+        while not (match(pop(), PATTERN_CODEBLOCK) and getIndentLevel(peek()) == indent) do
             code[#code + 1] = peek()
             code[#code + 1] = '\r\n'
         end
@@ -433,7 +434,7 @@ end
 local function renderLinesRaw(stream, options)
     local tree, links = readLineStream(stream)
     local accum = {}
-    local head, tail, insertHead, insertTail = nil, nil, nil, nil
+    local head, tail, insertHead, insertTail, prependHead, appendTail = nil, nil, nil, nil, nil, nil
     if options then
         assert(type(options) == 'table', "Options argument should be a table.")
         if options.tag then
@@ -446,12 +447,16 @@ local function renderLinesRaw(stream, options)
         end
         insertHead = options.insertHead
         insertTail = options.insertTail
+        prependHead = options.prependHead
+        appendTail = options.appendTail
     end
+    accum[#accum + 1] = prependHead
     accum[#accum + 1] = head
     accum[#accum + 1] = insertHead
     renderTree(tree, links, accum)
     accum[#accum + 1] = insertTail
     accum[#accum + 1] = tail
+    accum[#accum + 1] = appendTail
     return concat(accum)
 end
 
@@ -459,7 +464,7 @@ end
 -- Module
 --------------------------------------------------------------------------------
 
-local function renderLines(stream, options)
+local function renderLineIterator(stream, options)
     return pcall(renderLinesRaw, stream, options)
 end
 
@@ -474,7 +479,7 @@ end
 local renderers = {
     ['string'] = renderString,
     ['table'] = renderTable,
-    ['function'] = renderLines
+    ['function'] = renderLineIterator
 }
 
 local function render(source, options)
@@ -486,7 +491,7 @@ end
 return setmetatable({
     render = render,
     renderString = renderString,
-    renderLines = renderLines,
+    renderLineIterator = renderLineIterator,
     renderTable = renderTable
 }, {
     __call = function(self, ...)

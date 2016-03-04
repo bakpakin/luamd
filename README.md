@@ -17,16 +17,26 @@ Copy `md.lua` to your project in whatever directory you want.
 ## Use it
 Render markdown from a string. On bad input, retuns nil and an error message.
 ```lua
-local html, err = md.render(mdSoucre, options)
+local html, err = md.renderString(str, options)
 ```
 
-Render markdown from a line iterator.
+Render markdown from a line iterator. An iterator is a function the returns successive lines
+when called repeatedly, and nil when there are no lines left.
 ```lua
-local html, err = md.renderLines(iterator, options)
+local html, err = md.renderLineIterator(iter, options)
 ```
 
-Calling the module as a function will invoke `md.render` if the first argument is a string, and
-`md.renderLines` if the first argument is a function. This is the easiest way to use this module.
+Render markdown from a list like table of lines.
+```lua
+local html, err = md.renderTable(t, options)
+```
+
+Renders strings, iterators, and tables.
+```lua
+local html, err = md.render(object, options)
+```
+
+Calling the module as a function will invoke `md.render`. This is the easiest way to use the module.
 
 The options table is an optional table of options. The currently supported options are below.
 * `tag` - Surrounding HTML tag for HTML fragment.
