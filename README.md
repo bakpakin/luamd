@@ -43,6 +43,21 @@ The options table is an optional table of options. The currently supported optio
 * `attributes` - A table attributes for the surround HTML node. For example, `{ style = "padding: 10px;" }`.
 * `insertHead` - An HTML fragment to insert before the main body of HTML. (Inserted after the wrapping tag, if present.)
 * `insertTail` - An HTML fragment to insert after the main body of HTML. (Inserted before the closing tag, if present.)
+* `prependHead` - An HTML fragment to insert before the main body of HTML. (Inserted before the opening tag, if present.)
+* `appendTail` - An HTML fragment to insert after the main body of HTML. (Inserted after the closing tag, if present.)
+
+Here is a little diagram for where the optional fragments go.
+```
+** prependHead **
+<tag [attributes k1="v1" k2="v2" k3="v3" ...]>
+    ** insertHead **
+
+    ... rendered markdown ...
+
+    ** insertTail **
+</tag>
+** appendTail **
+```
 
 ## Todo
 
