@@ -59,6 +59,13 @@ Here is a little diagram for where the optional fragments go.
 ** appendTail **
 ```
 
+## Testing
+
+There is no unit-testing yet, but testing can be done by running the testrender.lua script. This
+builds HTML files in the test_documents directory that correspond to the markdown source files.
+Open these with a web browser and assure that they look fine. To add more test documents, place
+a markdown file in the test_documents folder and add it to the documents list in testrender.lua.
+
 ## Todo
 
 Needs some good unit testing. :).
