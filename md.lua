@@ -328,7 +328,7 @@ local function readBlockQuote(pop, peek, tree, links)
             local tp = isSpecialLine(l)
             return tp and tp ~= PATTERN_BLOCKQUOTE
         end)
-        bq.type = blockquote
+        bq.type = 'blockquote'
         tree[#tree + 1] = bq
         return peek()
     end
