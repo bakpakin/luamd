@@ -27,7 +27,7 @@ local gmatch = string.gmatch
 local byte = string.byte
 local find = string.find
 local lower = string.lower
-local tonumber = tonumber -- luacheck: ignore
+local tonumber = tonumber -- luacheck: no unused
 local type = type
 local pcall = pcall
 
@@ -124,18 +124,24 @@ local function lineRead(str, start, finish)
             linkEscape(sub(str, searchIndex, dstart - 1), tree)
         end
         local nextdstart, nextdfinish = find(str, delim, dfinish + 1, true)
-        if not nextdstart then error(format("Could not find closing delimiter %q.", delim)) end
-        if delim == '`' then
-            tree[#tree + 1]  = {
-                sub(str, dfinish + 1, nextdstart - 1),
-                type = 'code'
-            }
+        if nextdstart then
+            if delim == '`' then
+                tree[#tree + 1]  = {
+                    sub(str, dfinish + 1, nextdstart - 1),
+                    type = 'code'
+                }
+            else
+                local subtree = lineRead(str, dfinish + 1, nextdstart - 1)
+                subtree.type = lineDeimiterNames[delim]
+                tree[#tree + 1] = subtree
+            end
+            searchIndex = nextdfinish + 1
         else
-            local subtree = lineRead(str, dfinish + 1, nextdstart - 1)
-            subtree.type = lineDeimiterNames[delim]
-            tree[#tree + 1] = subtree
+            tree[#tree + 1]  = {
+                delim,
+            }
+            searchIndex = dfinish + 1
         end
-        searchIndex = nextdfinish + 1
     end
     return tree
 end
@@ -388,7 +394,7 @@ function readLineStream(stream, tree, links)
     return tree, links
 end
 
-local function read(str) -- luacheck: ignore
+local function read(str) -- luacheck: no unused
     return readLineStream(stringLineStream(str))
 end
 
