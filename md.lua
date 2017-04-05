@@ -27,7 +27,7 @@ local gmatch = string.gmatch
 local byte = string.byte
 local find = string.find
 local lower = string.lower
-local tonumber = tonumber
+local tonumber = tonumber -- luacheck: ignore
 local type = type
 local pcall = pcall
 
@@ -66,7 +66,7 @@ local function findDelim(str, start, max)
     local delim = nil
     local min = 1/0
     local finish = 1/0
-    local max = max or #str
+    max = max or #str
     for i = 1, #lineDelimiters do
         local pos, fin = find(str, lineDelimiters[i], start, true)
         if pos and pos < min and pos <= max then
@@ -155,7 +155,7 @@ local function getIndentLevel(line)
     return level
 end
 
-local function stripIndent(line, level, ignorepattern)
+local function stripIndent(line, level, ignorepattern) -- luacheck: no unused args
     local currentLevel = -1
     for i = 1, #line do
         if byte(line, i) == byte("\t") then
@@ -169,7 +169,7 @@ local function stripIndent(line, level, ignorepattern)
             return sub(line, i, -1)
         elseif currentLevel > level then
             local front = ""
-            for j = 1, currentLevel - level do front = front .. " " end
+            for j = 1, currentLevel - level do front = front .. " " end -- luacheck: no unused args
             return front .. sub(line, i, -1)
         end
     end
@@ -388,7 +388,7 @@ function readLineStream(stream, tree, links)
     return tree, links
 end
 
-local function read(str)
+local function read(str) -- luacheck: ignore
     return readLineStream(stringLineStream(str))
 end
 
@@ -503,7 +503,7 @@ return setmetatable({
     renderLineIterator = renderLineIterator,
     renderTable = renderTable
 }, {
-    __call = function(self, ...)
+    __call = function(self, ...) -- luacheck: no unused args
         return render(...)
     end
 })
