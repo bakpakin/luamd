@@ -1,0 +1,11 @@
+#!/bin/bash
+
+CURDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROG="$CURDIR/luamd -f -p"
+PATTERN=""
+
+if [ ! -d "CommonMark" ]; then
+	git clone https://github.com/jgm/CommonMark.git
+fi
+
+python3 CommonMark/test/spec_tests.py --program "$PROG" --spec "CommonMark/spec.txt" --pattern "$PATTERN"

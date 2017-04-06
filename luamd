@@ -1,0 +1,110 @@
+#!/usr/bin/env lua
+
+local function showusage()
+    print("usage: luamd [OPTION] ... file.md")
+    print("Converts Markdown to HTML")
+    print("")
+    print(" -f,  --fragment             convert to HTML fragment only")
+    print(" -p,  --print-only           just print, don't write to file")
+    print(" -v,  --verbose              show some useful info while working")
+    print(" -h,  --help                 show this usage help")
+    print("")
+    print("This software is licensed under the MIT License.")
+    print("See https://github.com/bakpakin/luamd for more info.")
+end
+
+-- option parsing:
+local longopts = {
+    fragment = "f",
+    help = "h",
+    ["print-only"] = "p",
+    verbose = "v",
+}
+
+local fragment, print_only, verbose
+
+local ARGV = arg
+local argidx = 1
+while argidx <= #ARGV do
+    local arg = ARGV[argidx]
+    argidx = argidx + 1
+    if arg == "--" then break end
+    -- parse longopts
+    if arg:sub(1,2) == "--" then
+        local opt = longopts[arg:sub(3)]
+        if opt ~= nil then arg = "-"..opt end
+    end
+    -- code for each option
+    if arg == "-h" then
+        return showusage()
+    elseif arg == "-f" then
+        fragment = true
+    elseif arg == "-p" then
+        print_only = true
+    elseif arg == "-v" then
+        verbose = true
+    else
+        -- not a recognized option, should be a filename
+        argidx = argidx - 1
+        break
+    end
+end
+
+if verbose then
+    print("Running", _VERSION)
+    print("Options", ...)
+end
+
+local function file_exists(name)
+    local f=io.open(name,"r")
+    if f~=nil then io.close(f) return true else return false end
+end
+
+local stdin = io.stdin
+local md_options = {
+    prependHead = "<!DOCTYPE html><html>",
+    appendTail = "</html>",
+    tag = "body",
+    insertHead = string.format("<head><title>%s</title></head>", file),
+}
+if ARGV[argidx] and ARGV[argidx] ~= "" then
+    local file = nil
+    if file_exists(ARGV[argidx]) then
+        file = ARGV[argidx]
+    end
+    if file then
+        local md = require("md")
+        local f = io.open(file, "rb")
+        local content = f:read("*all")
+        f:close()
+        if fragment then md_options = {} end
+        local html, err = md(content, md_options)
+        if html then
+            if print_only then
+                print(html)
+            else
+                f = io.open(file..".html", "w")
+                f:write(html)
+                f:close()
+            end
+        elseif err then
+          print("Error: ", err)
+        end
+    end
+elseif stdin then
+    local md = require("md")
+    local f = stdin
+    local content = f:read("*all")
+    f:close()
+    if fragment then md_options = {} end
+    local html, err = md(content, md_options)
+    if html then
+        if print_only then
+            print(html)
+        end
+    elseif err then
+        print("Error: ", err)
+    end
+else
+    return showusage()
+end
