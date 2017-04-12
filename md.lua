@@ -302,6 +302,7 @@ local function readSimple(pop, peek, tree, links)
         p[#p + 1] = '\r\n'
         nextLine = pop()
     end
+    p[#p] = nil
     return peek()
 
 end
