@@ -182,15 +182,20 @@ local function stripIndent(line, level, ignorepattern) -- luacheck: no unused ar
 end
 
 --------------------------------------------------------------------------------
+-- Useful variables
+--------------------------------------------------------------------------------
+local NEWLINE = '\n'
+
+--------------------------------------------------------------------------------
 -- Patterns
 --------------------------------------------------------------------------------
 
 local PATTERN_EMPTY = "^%s*$"
 local PATTERN_COMMENT = "^%s*<>"
 local PATTERN_HEADER = "^%s*(%#+)%s*(.*)%#*$"
-local PATTERN_RULE1 = "^%s*(%-+)%s*$"
-local PATTERN_RULE2 = "^%s*(%*+)%s*$"
-local PATTERN_RULE3 = "^%s*(%_+)%s*$"
+local PATTERN_RULE1 = "^%s?%s?%s?(-%s*-%s*-[%s-]*)$"
+local PATTERN_RULE2 = "^%s?%s?%s?(*%s**%s**[%s*]*)$"
+local PATTERN_RULE3 = "^%s?%s?%s?(_%s*_%s*_[%s_]*)$"
 local PATTERN_CODEBLOCK = "^%s*%`%`%`(.*)"
 local PATTERN_BLOCKQUOTE = "^%s*> (.*)$"
 local PATTERN_ULIST = "^%s*[%*%-] (.+)$"
@@ -239,6 +244,7 @@ local function readSimple(pop, peek, tree, links)
             lineRead(rest),
             type = "h" .. #m
         }
+        tree[#tree + 1] = NEWLINE
         return pop()
     end
 
@@ -247,6 +253,7 @@ local function readSimple(pop, peek, tree, links)
        match(line, PATTERN_RULE2) or
        match(line, PATTERN_RULE3) then
         tree[#tree + 1] = { type = "hr", noclose = true }
+        tree[#tree + 1] = NEWLINE
         return pop()
     end
 
@@ -293,16 +300,17 @@ local function readSimple(pop, peek, tree, links)
 
     -- Do Paragraph
     local p = {
-        lineRead(line), '\r\n',
+        lineRead(line), NEWLINE,
         type = "p"
     }
     tree[#tree + 1] = p
     while nextLine and not isSpecialLine(nextLine) do
         p[#p + 1] = lineRead(nextLine)
-        p[#p + 1] = '\r\n'
+        p[#p + 1] = NEWLINE
         nextLine = pop()
     end
     p[#p] = nil
+    tree[#tree + 1] = NEWLINE
     return peek()
 
 end
@@ -354,6 +362,7 @@ local function readList(pop, peek, tree, links, expectedIndent)
         type = (listPattern == PATTERN_ULIST and "ul" or "ol")
     }
     tree[#tree + 1] = list
+    list[1] = NEWLINE
     while lineType == listPattern do
         list[#list + 1] = {
             lineRead(match(line, lineType)),
@@ -363,6 +372,7 @@ local function readList(pop, peek, tree, links, expectedIndent)
         if not line then break end
         lineType = isSpecialLine(line)
         if lineType ~= PATTERN_EMPTY then
+            list[#list + 1] = NEWLINE
             local i = getIndentLevel(line)
             if i < indent then break end
             if i > indent then
@@ -378,6 +388,8 @@ local function readList(pop, peek, tree, links, expectedIndent)
             end
         end
     end
+    list[#list + 1] = NEWLINE
+    tree[#tree + 1] = NEWLINE
     return peek()
 end
 
@@ -461,6 +473,7 @@ local function renderLinesRaw(stream, options)
     accum[#accum + 1] = head
     accum[#accum + 1] = insertHead
     renderTree(tree, links, accum)
+    if accum[#accum] == NEWLINE then accum[#accum] = nil end
     accum[#accum + 1] = insertTail
     accum[#accum + 1] = tail
     accum[#accum + 1] = appendTail
